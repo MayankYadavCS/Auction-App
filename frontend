@@ -1,0 +1,134 @@
+import { Clock } from "lucide-react";
+import { Link } from "react-router-dom";
+
+interface AuctionCardProps {
+  id: string;
+  title: string;
+  description: string;
+  currentBid: number;
+  endTime: string;
+  bids: number;
+}
+
+export const AuctionCard = ({
+  id,
+  title,
+  description,
+  currentBid,
+  endTime,
+  bids,
+}: AuctionCardProps) => {
+  return (
+    <Link to={`/auction/${id}`} className="block">
+      <div className="glass-card rounded-xl overflow-hidden hover-lift p-4">
+        <h3 className="font-semibold text-lg text-luxe-charcoal">
+          {title}
+        </h3>
+        <p className="text-gray-600 text-sm mt-1 line-clamp-2">{description}</p>
+        <div className="mt-4 flex justify-between items-center">
+          <div>
+            <p className="text-sm text-gray-500">Current Bid</p>
+            <p className="font-semibold text-luxe-gold">
+              ${currentBid.toLocaleString()}
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="flex items-center text-sm text-gray-500">
+              <Clock className="h-4 w-4 mr-1" />
+              {endTime}
+            </div>
+            <p className="text-sm text-gray-500">{bids} bids</p>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+};
+src/pages/Index.tsx
+import { Navbar } from "../components/Navbar";
+import { AuctionCard } from "../components/AuctionCard";
+import { CategoryCard } from "../components/CategoryCard";
+import { Watch, Car, Gem, Paintbrush, Wine, Camera } from "lucide-react";
+
+const featuredAuctions = [
+  {
+    id: "1",
+    title: "Vintage Rolex Submariner",
+    description: "1960s Rolex Submariner in excellent condition with original parts and documentation.",
+    currentBid: 15000,
+    endTime: "2h 45m",
+    bids: 23,
+  },
+  {
+    id: "2",
+    title: "Abstract Oil Painting",
+    description: "Original contemporary abstract oil painting by renowned artist Sarah Chen.",
+    currentBid: 4200,
+    endTime: "4h 15m",
+    bids: 15,
+  },
+  {
+    id: "3",
+    title: "Classic Ferrari 250 GT",
+    description: "Rare 1962 Ferrari 250 GT in pristine condition, fully restored.",
+    currentBid: 2500000,
+    endTime: "23h 10m",
+    bids: 45,
+  },
+];
+
+const categories = [
+  { title: "Watches", count: 156, icon: <Watch className="w-6 h-6" /> },
+  { title: "Cars", count: 89, icon: <Car className="w-6 h-6" /> },
+  { title: "Jewelry", count: 243, icon: <Gem className="w-6 h-6" /> },
+  { title: "Art", count: 178, icon: <Paintbrush className="w-6 h-6" /> },
+  { title: "Wine", count: 112, icon: <Wine className="w-6 h-6" /> },
+  { title: "Photography", count: 94, icon: <Camera className="w-6 h-6" /> },
+];
+
+const Index = () => {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-secondary">
+      <Navbar />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+        {/* Hero Section */}
+        <div className="text-center mb-16 fade-in">
+          <h1 className="text-4xl md:text-5xl font-bold text-luxe-charcoal mb-4">
+            Discover Extraordinary Auctions
+          </h1>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Bid on unique and exclusive items from around the world.
+            Join our community of passionate collectors and sellers.
+          </p>
+        </div>
+
+        {/* Featured Auctions */}
+        <section className="mb-16">
+          <h2 className="text-2xl font-semibold text-luxe-charcoal mb-6">
+            Featured Auctions
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredAuctions.map((auction) => (
+              <AuctionCard key={auction.id} {...auction} />
+            ))}
+          </div>
+        </section>
+
+        {/* Categories */}
+        <section>
+          <h2 className="text-2xl font-semibold text-luxe-charcoal mb-6">
+            Browse by Category
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {categories.map((category) => (
+              <CategoryCard key={category.title} {...category} />
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+export default Index;
