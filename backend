@@ -1,0 +1,80 @@
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+app.use(cors());
+app.use(express.json());
+
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const AuctionSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  currentBid: Number,
+  endTime: Date,
+  bids: [{ user: String, amount: Number, time: Date }],
+});
+
+const Auction = mongoose.model("Auction", AuctionSchema);
+
+// Get all auctions
+app.get("/api/auctions", async (req, res) => {
+  const auctions = await Auction.find();
+  res.json(auctions);
+});
+
+// Get a single auction
+app.get("/api/auctions/:id", async (req, res) => {
+  const auction = await Auction.findById(req.params.id);
+  if (!auction) return res.status(404).json({ message: "Auction not found" });
+  res.json(auction);
+});
+
+// Create an auction
+app.post("/api/auctions", async (req, res) => {
+  const auction = new Auction(req.body);
+  await auction.save();
+  res.status(201).json(auction);
+});
+
+// Handle real-time bidding
+io.on("connection", (socket) => {
+  console.log("New client connected");
+
+  socket.on("placeBid", async ({ auctionId, user, amount }) => {
+    const auction = await Auction.findById(auctionId);
+    if (!auction) return;
+    
+    if (amount > auction.currentBid) {
+      auction.currentBid = amount;
+      auction.bids.push({ user, amount, time: new Date() });
+      await auction.save();
+      io.emit("bidUpdated", { auctionId, currentBid: amount, bids: auction.bids.length });
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
